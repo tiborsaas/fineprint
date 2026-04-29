@@ -22,3 +22,8 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Deno / Fresh
+_fresh/
+.env
+deno.lock
