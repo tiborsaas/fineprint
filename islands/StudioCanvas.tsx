@@ -36,6 +36,7 @@ export default function StudioCanvas() {
     if (!ctx) return;
 
     let startTime = performance.now();
+    let resizeTimer: ReturnType<typeof setTimeout> | undefined;
 
     function resize() {
       if (!canvas) return;
@@ -44,8 +45,13 @@ export default function StudioCanvas() {
       ctx!.scale(devicePixelRatio, devicePixelRatio);
     }
 
+    function debouncedResize() {
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(resize, 100);
+    }
+
     resize();
-    const ro = new ResizeObserver(resize);
+    const ro = new ResizeObserver(debouncedResize);
     ro.observe(canvas);
 
     function loop(now: number) {
@@ -62,6 +68,7 @@ export default function StudioCanvas() {
 
     return () => {
       cancelAnimationFrame(animFrameRef.current);
+      clearTimeout(resizeTimer);
       ro.disconnect();
     };
   }, [params, activeAlgorithm, isRendering]);
@@ -175,7 +182,10 @@ export default function StudioCanvas() {
 // Add new algorithms here without modifying the component above.
 // ---------------------------------------------------------------------------
 
-type DrawFn = (
+/** Hex alpha suffix for the trail effect (≈13% opacity) */
+const TRAIL_ALPHA = "22";
+
+
   ctx: CanvasRenderingContext2D,
   w: number,
   h: number,
@@ -227,7 +237,7 @@ const perlinWaves: DrawFn = (ctx, w, h, t, params) => {
 
 const particleField: DrawFn = (ctx, w, h, t, params) => {
   const { bg, fg } = getColors(params.colorMode);
-  ctx.fillStyle = bg + "22";
+  ctx.fillStyle = bg + TRAIL_ALPHA;
   ctx.fillRect(0, 0, w, h);
 
   const count = Math.floor(params.density * 200) + 20;

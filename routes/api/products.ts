@@ -1,6 +1,6 @@
 import { Handlers } from "$fresh/server.ts";
 import { type Product, ProductType } from "../../utils/types.ts";
-import { getSupabaseClient } from "../../utils/db.ts";
+import { getSupabaseClient, toProduct } from "../../utils/db.ts";
 
 export const handler: Handlers = {
   /**
@@ -35,7 +35,7 @@ export const handler: Handlers = {
       const { data, error } = await query;
       if (error) throw error;
 
-      return Response.json(data as Product[]);
+      return Response.json((data ?? []).map(toProduct) as Product[]);
     } catch (err) {
       console.error("[api/products] GET error:", err);
       return Response.json({ error: "Internal server error" }, { status: 500 });
